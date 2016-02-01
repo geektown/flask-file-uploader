@@ -141,6 +141,14 @@ def get_file(filename):
 @app.route('/', methods=['GET', 'POST'])
 def index():
     return render_template('index.html')
+    
+@app.route('/uploader/', methods=['GET'])
+def uploader():
+    return render_template('upload.html')
+
+@app.route('/about/', methods=['GET'])
+def about():
+    return render_template('about.html')
 
 
 if __name__ == '__main__':
