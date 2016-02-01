@@ -8,7 +8,7 @@
 import os
 import PIL
 from PIL import Image
-import simplejson
+import json
 import traceback
 
 from flask import Flask, request, render_template, session, redirect, url_for, flash, send_from_directory
@@ -24,7 +24,7 @@ app.config['UPLOAD_FOLDER'] = 'data/'
 app.config['THUMBNAIL_FOLDER'] = 'data/thumbnail/'
 app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024
 
-ALLOWED_EXTENSIONS = set(['txt', 'gif', 'png', 'jpg', 'jpeg', 'bmp', 'rar', 'zip', '7zip', 'doc', 'docx'])
+ALLOWED_EXTENSIONS = set(['txt', 'gif', 'png', 'jpg', 'jpeg', 'bmp', 'rar', 'zip', '7zip', 'doc', 'docx', 'xls', 'pdf'])
 IGNORED_FILES = set(['.gitignore'])
 
 bootstrap = Bootstrap(app)
@@ -72,7 +72,8 @@ def upload():
         #pprint (vars(objectvalue))
 
         if file:
-            filename = secure_filename(file.filename)
+            # filename = secure_filename(file.filename)
+            filename = file.filename
             filename = gen_file_name(filename)
             mimetype = file.content_type
 
@@ -94,8 +95,8 @@ def upload():
 
                 # return json for js call back
                 result = uploadfile(name=filename, type=mimetype, size=size)
-            
-            return simplejson.dumps({"files": [result.get_file()]})
+            print result.get_file()
+            return json.dumps({"files": [result.get_file()]}, ensure_ascii=False)
 
     if request.method == 'GET':
         # get all file in ./data directory
@@ -103,12 +104,8 @@ def upload():
         
         file_display = []
 
-        for f in files:
-            size = os.path.getsize(os.path.join(app.config['UPLOAD_FOLDER'], f))
-            file_saved = uploadfile(name=f, size=size)
-            file_display.append(file_saved.get_file())
-
-        return simplejson.dumps({"files": file_display})
+        
+        return json.dumps({"files": file_display}, ensure_ascii=False).decode('utf8')
 
     return redirect(url_for('index'))
 
@@ -125,9 +122,9 @@ def delete(filename):
             if os.path.exists(file_thumb_path):
                 os.remove(file_thumb_path)
             
-            return simplejson.dumps({filename: 'True'})
+            return json.dumps({filename: 'True'})
         except:
-            return simplejson.dumps({filename: 'False'})
+            return json.dumps({filename: 'False'})
 
 
 # serve static files
@@ -147,4 +144,4 @@ def index():
 
 
 if __name__ == '__main__':
-    app.run(debug = True, port=9191)
+    app.run(host='0.0.0.0', debug = True, port=9191)
